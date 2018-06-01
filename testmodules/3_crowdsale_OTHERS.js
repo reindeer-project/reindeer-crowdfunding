@@ -66,11 +66,12 @@ contract('ReindeerCrowdsale', (accounts) => {
   })
   
   describe('1) Walkthrough.', function() {
-    context('--SUCCESS', ()=> {
+    context('--OTHERS', ()=> {
       it('Prepare new contracts', async function () {
         const d = 60*60*24;
-        const currenttime = web3.eth.getBlock('latest').timestamp;
+        const currenttime = web3.eth.getBlock('latest').timestamp + 200*d;
         const goal = 1; //Dummy value for test
+        this.openingtime = currenttime + 5*d;
         this.openingtime = currenttime + 5*d;
         this.salesPeriod =[0,0,0,0];
         this.salesPeriod[0]= this.openingtime + 7*d;
@@ -89,7 +90,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         }  
         obj = await deployContract(this.openingtime,this.closingtime,this.salesPeriod,goal, someEther,this.fundOwners);
 	      this.crowdsale=obj["crowdsale"];
-	      this.token=obj["token"];
+        this.token=obj["token"];
         this.fund=obj["fund"];
         //Setup users
         this.prewhitelisted=[];
@@ -111,15 +112,18 @@ contract('ReindeerCrowdsale', (accounts) => {
 	      //const testtime = web3.eth.getBlock('latest').timestamp;
 	      //console.log("          at: " + timeConverter(testtime));
       });
-      it('BeforeOpen: Check the token ownership control', async function () {
+      it('BeforeOpen: Mint private tokens', async function () {
         await obj["crowdsale"].resetTokenOwnership({ from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         var ownership = await obj["token"].owner();
         //Check the token ownership control
         await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled; //change ownership to CloudSale contract's owner
         var ownership = await obj["token"].owner();
+        await obj["token"].mint(this.anonymous[1],toWei(1000000));
+        await assert.equal(await this.token.balanceOf(this.anonymous[1]), toWei(1000000));        
+        await obj["token"].transferOwnership(obj["crowdsale"].address); //change ownership to CloudSale contract
         await assert.equal(ownership, accounts[0]);
-        await obj["token"].transferOwnership(obj["crowdsale"].address).should.be.fulfilled; //change ownership to CloudSale contract
       });
+
       it('BeforeOpen: Default exchange rate is 5,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
         await assert.equal(actual, 5000);
@@ -149,8 +153,6 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.addToWhitelist(this.anonymous[1]).should.be.fulfilled;
         let isAuthorized = await this.crowdsale.whitelist(this.anonymous[1]);
         isAuthorized.should.equal(true);
-        //Not allowed finalize
-        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
       it('PreSale: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
@@ -165,24 +167,10 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { from: this.anonymous[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
-      it('PreSale: Whitelisted member allowed under 10000 can not buy the token.', async function () {
-        someEther = toWei(0.01);
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
-        someEther = toWei(0.1);
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
-        someEther = toWei(40);
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
-        someEther = toWei(300);
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
-        someEther = toWei(301);
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
+      it('PreSale: Emergency stop!', async function () {
+        await this.crowdsale.pause();
       });
-      it('PreSale: Whitelisted member allowed over 10000 can buy the token.', async function () {
+      it('PreSale: During paused state, whitelisted member allowed over 10000 can buy the token.', async function () {
         for (i = 0; i <2; i++){
           someEther = toWei(0.01);  //under the minUserCap of whitelisted.     
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
@@ -195,30 +183,16 @@ contract('ReindeerCrowdsale', (accounts) => {
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
           someEther = toWei(300);  //minUserCap of prewhitelisted.       
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);          
-          await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.fulfilled;
+          await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
           someEther = toWei(700);  //The summary of bought volume is under the maxUserCap of prewhitelisted. 
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
-          await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.fulfilled;
+          await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
           someEther = toWei(300);  //The summary of bought volume is over the maxUserCap of prewhitelisted. 
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
           const x = await this.crowdsale.getUserContribution(this.prewhitelisted[i]);
-          await assert.equal(x, toWei(1000)); //Total bought volume is the same as maxUserCap.
+          await assert.equal(x, toWei(0)); //Total bought volume is the same as maxUserCap.
         };
-        //Emurate reaching maxTokenSupply within preSale.
-        //preTokenSupply-sold-minUnit-fundBalance
-        var emurateval= 995500000-(5000*1000*2)-(5000*300)-500000000;
-        await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled; //change ownership to CloudSale contract's owner
-        await obj["token"].mint(obj["fund"].address,toWei(emurateval));
-        await obj["token"].transferOwnership(obj["crowdsale"].address).should.be.fulfilled;
-        //within maxTokenSupply balance
-        someEther = toWei(300);
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { from: this.prewhitelisted[2], value: someEther }).should.be.fulfilled;
-        //over maxTokenSupply balance
-        someEther = toWei(300);
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { from: this.prewhitelisted[2], value: someEther }).should.be.rejectedWith(assertThrows);
-        //Not allowed finalize
-        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
       it('1stTerm: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
@@ -231,34 +205,29 @@ contract('ReindeerCrowdsale', (accounts) => {
         //const testtime = web3.eth.getBlock('latest').timestamp;
 	      //console.log("          at: " + timeConverter(testtime));
       });
-      it('1stTerm: Only the whitelisted member can buy the token.', async function () {
-        someEther=toWei(0); 
-        await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
+      it('1stTerm: During emergency paused, the whitelisted member cannot buy the token.', async function () {
         someEther=toWei(0.09); 
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
         someEther=toWei(0.1);
+        //const gas1 = await this.crowdsale.buyTokens.estimateGas(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]});
+        //console.log(gas1+"unit, " + gas1*0.0000005*80000+"JPY");
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.fulfilled;
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
+        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
         someEther=toWei(500);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
         someEther=toWei(1001);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        //Not allowed finalize
-        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
       it('2ndTerm: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
@@ -269,6 +238,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const actual = await this.crowdsale.getRate();
         await assert.equal(actual, 2000);
       });
+      it('2ndTerm: Restart!', async function () {
+        await this.crowdsale.unpause();
+      });      
       it('2ndTerm: Only the whitelisted member can buy the token.', async function () {
         someEther=toWei(0.09); 
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
@@ -290,8 +262,6 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        //Not allowed finalize
-        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
       it('3rdTerm: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
@@ -324,8 +294,6 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        //Not allowed finalize
-        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
  
       it('4thTerm: Prepared', async function () {
@@ -338,7 +306,10 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(actual, 1800);
 
       });
-      it('4thTerm: Only the whitelisted member can buy the token.', async function () {
+      it('PreSale: Emergency stop!', async function () {
+        await this.crowdsale.pause();
+      });
+      it('4thTerm: During stop, the whitelisted member cannot buy the token.', async function () {
         someEther=toWei(0.09); 
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -347,13 +318,13 @@ contract('ReindeerCrowdsale', (accounts) => {
         someEther=toWei(0.1);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.fulfilled;
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
+        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
         someEther=toWei(50);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
-        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
+        await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
         someEther=toWei(1001);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -392,28 +363,114 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
       });
+      it('Mint before finalized', async function () {
+        await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled; //change ownership to CloudSale contract's owner
+        await this.token.mint(this.fund.address,toWei(10000));
+        await obj["token"].transferOwnership(obj["crowdsale"].address); //change ownership to CloudSale contract
+      });
+      it('Not refundable before finalization', async function () {
+        //Not refundable
+        await this.crowdsale.claimRefund({from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
+      });
       it('Finalize', async function () {
         //Closed
         const actual1 = web3.fromWei(await web3.eth.getBalance(await this.crowdsale.vault()).toNumber(),"ether");
         await assert.notEqual(actual1, 0);
         const actual2 = web3.fromWei(await web3.eth.getBalance(this.fund.address).toNumber(),"ether");
         await assert.equal(actual2, 0);
-        //Finalize;
-        await this.crowdsale.finalize().should.be.fulfilled;
+        //Finalize
+        await this.crowdsale.finalize({gas:500000}).should.be.fulfilled;
         const actual3 = web3.fromWei(await web3.eth.getBalance(await this.crowdsale.vault()).toNumber(),"ether");
         await assert.equal(actual3, 0);
         const actual4 = web3.fromWei(await web3.eth.getBalance(this.fund.address).toNumber(),"ether");
         await assert.notEqual(actual4, 0);
         //Finalize need to be work at once.
         await assert.equal(actual1, actual4); //same eth sent to the wallet.
-        await this.crowdsale.finalize().should.be.rejectedWith(assertThrows);
+        //Unrefundable before finalize
+        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
+      });
+      it('Can not buy after finalinzation', async function () {
         someEther = toWei(0.1);
         await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
-      });
-      it('Use fund assets', async function () {
-        //Open fund wallet
-        
       });     
+      it('Not refundable after finalinzation', async function () {
+        await this.crowdsale.claimRefund({from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
+      });
+      it('Burn after finalized', async function () {
+        //Move burnable amount of token to owner account.
+        const total1 = await this.token.totalSupply();
+        const fund1 = await this.token.balanceOf(this.fund.address);
+        const sold1  = total1 - fund1;
+        const burnable = fund1 - sold1;
+        //Reset ownership
+        await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled;
+        //Transfer ownership
+        await obj["token"].transferOwnership(obj["fund"].address).should.be.fulfilled;
+
+        //burn
+        const transferEncoded = await this.token.contract.burn.getData(burnable);
+        const transaction = await this.fund.submitTransaction(this.token.address, 0, transferEncoded, {from: this.fundOwners[0]});
+        const log = transaction.logs.filter((l) => l.event === "Submission");
+        const pm = log[0].args["transactionId"];
+        //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
+        const confirmA = await this.fund.confirmTransaction(pm,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const totalTkn = await this.token.totalSupply();
+        const fundTkn = await this.token.balanceOf(this.fund.address);
+        const percentage1 = fundTkn / totalTkn;
+        const percentage2 = Math.floor(percentage1*100);
+        await assert.equal(percentage2, 50); //Fund own 50% of total supply.  
+      });
+      it('Sned token', async function () {        
+        //sendToken
+        const sometoken = toWei(10);
+        const ownertoken2 = await this.token.balanceOf(this.fundOwners[1]);
+        const transferEncoded1 = await this.token.contract.transfer.getData(this.fundOwners[1],sometoken);
+        const transaction1 = await this.fund.submitTransaction(this.token.address, 0, transferEncoded1, {from: this.fundOwners[0]});
+        const log1 = transaction1.logs.filter((l) => l.event === "Submission");
+        const pm1 = log1[0].args["transactionId"];
+        //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
+        const confirmB = await this.fund.confirmTransaction(pm1,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const ownertoken3 = await this.token.balanceOf(this.fundOwners[1]);
+        const ownertoken4 = ownertoken2 + sometoken;
+        await assert.equal(ownertoken3.toNumber(), ownertoken4);
+      });
+      it('Mint after finalized', async function () {
+        const fundA = await this.token.balanceOf(this.fund.address);
+        const total3 = await this.token.totalSupply();
+        const mintbalance = total3*0.1/12;
+        const transferEncoded2 = await this.token.contract.mint.getData(obj["fund"].address,mintbalance);
+        const transaction2 = await this.fund.submitTransaction(this.token.address, 0, transferEncoded2, {from: this.fundOwners[0]});
+        const log2 = transaction2.logs.filter((l) => l.event === "Submission");
+        const pm2 = log2[0].args["transactionId"];
+        //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
+        const confirmC = await this.fund.confirmTransaction(pm2,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const fundB = await this.token.balanceOf(this.fund.address);
+        const total4 = await this.token.totalSupply();
+        await assert.isAbove(total4.toNumber(),total3.toNumber());
+        await assert.isAbove(fundB.toNumber(),fundA.toNumber());
+        //console.log(total3+" << "+total4);
+        //console.log(fundA+" << "+fundB);
+      });
+      it('Withdraw ether from the fund', async function () {
+        const actual3 = web3.fromWei(await web3.eth.getBalance(this.fundOwners[2]).toNumber(),"ether");
+        const transaction3 = await this.fund.submitTransaction(this.fundOwners[2], web3.toWei(1), "", {from: this.fundOwners[0]});
+        const log3 = transaction3.logs.filter((l) => l.event === "Submission");
+        const pm3 = log3[0].args["transactionId"];
+        //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
+        const confirmD = await this.fund.confirmTransaction(pm3,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const actual4 = web3.fromWei(await web3.eth.getBalance(this.fundOwners[2]).toNumber(),"ether");
+        await assert.isAbove(actual4,actual3);
+      });
+      it('Transfer token ownership for other contracts.', async function () {
+        const transferEncoded5 = await this.token.contract.transferOwnership.getData(this.fundOwners[0]);
+        const transaction5 = await this.fund.submitTransaction(this.token.address, 0, transferEncoded5, {from: this.fundOwners[0]});
+        const log5 = transaction5.logs.filter((l) => l.event === "Submission");
+        const pm5 = log5[0].args["transactionId"];
+        //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
+        const confirmD = await this.fund.confirmTransaction(pm5,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const ownershipD = await this.token.owner();
+        await assert.equal(ownershipD,this.fundOwners[0]);
+      });
     })
   })
 })
