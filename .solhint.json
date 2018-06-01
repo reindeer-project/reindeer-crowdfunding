@@ -1,0 +1,12 @@
+{
+  "extends": "default",
+  "rules": {
+    "compiler-fixed": false,
+    "indent": ["error", 4],
+    "quotes": ["error", "single"],
+    "max-line-length": ["error", 120],
+    "const-name-snakecase": false,
+    "no-empty-blocks": false,
+    "not-rely-on-time": false
+  }
+}

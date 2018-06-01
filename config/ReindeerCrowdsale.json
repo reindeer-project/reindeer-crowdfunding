@@ -1,0 +1,13 @@
+{
+  "openingTime": 1590820289  ,
+  "salesPeriod": [1590820389,1590820489,1590820589,1590820689],
+  "closingTime": 1590820789,
+  "rates": [5000,2300,2000,1900,1800],
+  "cap": 100000,
+  "goal": 3000,
+  "initialFundBalance" : 500000000,
+  "maxTokenSupply" : 1000000000,
+  "preTokenSupply" : 995500000,
+  "minUserCap": [0.1,300],
+  "maxUserCap": [40,1000]
+}
