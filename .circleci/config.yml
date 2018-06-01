@@ -11,29 +11,15 @@ jobs:
 
     steps:
       - checkout
-
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-
       - run:
           name: Install global packages
           command: yarn
       - run:
           name: Install dependencies
           command: yarn install
-
-      - save_cache:
-          key: v1-dependencies-{{ checksum "package.json" }}
-          paths:
-            - node_modules
-
       - run:
           name: Solidity Linter
           command: yarn lint:sol
-
       - run:
           name: Unit tests with coverage
           command: yarn test:cov
