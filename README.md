@@ -5,15 +5,15 @@ reindeer token and crowdfunding contracts
 node.js, yarn
 
 # Installation
-git clone https://github.com/reindeer-project/reindeer-crowdfunding.git
+`git clone https://github.com/reindeer-project/reindeer-crowdfunding.git1`
 
-cd reindeer-crowdfunding
+`cd reindeer-crowdfunding`
 
-yarn
+`yarn`
 
-yarn install
+`yarn install`
 
 # Testing
-yarn lint:sol
+`yarn lint:sol`
 
-yarn test:cov
+`yarn test:cov`
