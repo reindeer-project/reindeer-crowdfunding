@@ -122,6 +122,8 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(await this.token.balanceOf(this.anonymous[1]), toWei(1000000));        
         await obj["token"].transferOwnership(obj["crowdsale"].address); //change ownership to CloudSale contract
         await assert.equal(ownership, accounts[0]);
+        //Not allowed finalize
+        await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
 
       it('BeforeOpen: Default exchange rate is 5,000/eth', async function () {
@@ -192,6 +194,8 @@ contract('ReindeerCrowdsale', (accounts) => {
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
           const x = await this.crowdsale.getUserContribution(this.prewhitelisted[i]);
           await assert.equal(x, toWei(0)); //Total bought volume is the same as maxUserCap.
+          //Not allowed finalize
+          await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
         };
       });
       it('1stTerm: Prepared', async function () {

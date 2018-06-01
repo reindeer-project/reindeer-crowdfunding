@@ -1,3 +1,5 @@
 require("../testmodules/1_crowdsale_SUCCESS")
 require("../testmodules/2_crowdsale_FAILURE")
 require("../testmodules/3_crowdsale_OTHERS")
+require("../testmodules/4_crowdsale_SUCCESS_quickly1")
+require("../testmodules/5_crowdsale_SUCCESS_quickly2")
