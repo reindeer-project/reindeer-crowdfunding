@@ -9,5 +9,6 @@
   "maxTokenSupply" : 1000000000,
   "preTokenSupply" : 995500000,
   "minUserCap": [0.1,300],
-  "maxUserCap": [40,1000]
+  "maxUserCap": [40,1000],
+  "tokenAddress": "0x49d053e809bd55d1364f4c40741a5a8e1e7ab58f"
 }

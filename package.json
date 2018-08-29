@@ -43,7 +43,9 @@
     "lint:sol": "solhint contracts/*.sol",
     "compile": "rm -rf ./build/* && truffle compile",
     "clean": "rm -rf ./build/* && yarn truffle networks --clean",
-    "deploy:dev": "yarn truffle compile && truffle deploy --network private"
+    "deploy:dev": "yarn truffle compile && truffle deploy --network private",
+    "deploy:ropsten": "yarn truffle compile && truffle deploy --network ropsten",
+    "deploy:live": "yarn truffle compile && truffle deploy --network live"
   },
   "lint-staged": {
     "**/*.{js,json}": [

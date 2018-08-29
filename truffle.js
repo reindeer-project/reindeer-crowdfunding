@@ -31,27 +31,20 @@ module.exports = {
       gas: 4400000,
       gasPrice: 21000000000
     },
+    ropsten: {
+      network_id: 3,
+      host: "localhost",
+      port: 8545,
+      gas: 4400000,
+      gasPrice: 21000000000
+    },
     private: {
       host: "localhost",
       port: 8545,
       network_id: "*", // Match any network id
       gas: 4400000,
       gasPrice: 21000000000
-    },
-    // ropsten: {
-    //   network_id: 3,
-    //   provider: engineRopsten,
-    //   from: addresses[0],
-    //   gas: 4700000,
-    //   gasPrice: 222000000000
-    // },
-    // mainnet: {
-    //   network_id: 1,
-    //   provider: engineMainnet,
-    //   from: addresses[0],
-    //   gas: 5000000,
-    //   gasPrice: 75000000000
-    // }
+    }
   },
   solc: {
     optimizer: {

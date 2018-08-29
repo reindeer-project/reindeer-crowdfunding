@@ -1,6 +1,5 @@
 const fs = require('fs');
 const ReindeerFund = artifacts.require('ReindeerFund.sol');
-const ReindeerToken = artifacts.require('ReindeerToken.sol');
 const ReindeerCrowdsale = artifacts.require('ReindeerCrowdsale.sol');
 const fundParams = JSON.parse(fs.readFileSync('../config/ReindeerFund.json', 'utf8'));
 const crowdsaleParams = JSON.parse(fs.readFileSync('../config/ReindeerCrowdsale.json', 'utf8'));
@@ -16,9 +15,10 @@ module.exports = function deployContracts(deployer) {
   const actualMaxTokenSupply = toWei(crowdsaleParams.maxTokenSupply);
   const actualPreTokenSupply = toWei(crowdsaleParams.preTokenSupply);
   const actualInitialFundBalance = toWei(crowdsaleParams.initialFundBalance);
+  const tokenAddress = crowdsaleParams.tokenAddress;
 
   deployer.deploy(ReindeerFund, fundParams.owners, fundParams.required).then(() =>
-      deployer.deploy(ReindeerToken).then(() =>
+      
         deployer.deploy(
           ReindeerCrowdsale, 
           crowdsaleParams.openingTime, 
@@ -32,15 +32,7 @@ module.exports = function deployContracts(deployer) {
           actualMinUserCap,
           actualMaxUserCap,
           ReindeerFund.address,
-          ReindeerToken.address
-        ).then(
-          async () => {
-              const reindeertoken = await ReindeerToken.deployed();
-              await reindeertoken.mint(ReindeerFund.address,actualInitialFundBalance);
-	            await reindeertoken.transferOwnership(ReindeerCrowdsale.address);
-	        }
-          
+          tokenAddress
         )
-      )
   );
 };

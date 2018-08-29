@@ -1,7 +1,7 @@
 const fs = require('fs');
 const moment = require("moment");
 const ReindeerCrowdsale = artifacts.require('./ReindeerCrowdsale.sol');
-const ReindeerToken = artifacts.require('./ReindeerToken.sol');
+const ReindeerToken = artifacts.require('./utils/ReindeerToken.sol')
 const ReindeerFund = artifacts.require('./ReindeerFund.sol');
 const { toWei, timeTravel, timeLeap, should, BigNumber} = require('./utils/reindeerHelper');
 const fundParams = JSON.parse(fs.readFileSync('./config/ReindeerFund.json', 'utf8'));
