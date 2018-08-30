@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/reindeer-project/reindeer-crowdfunding.svg?style=svg)](https://circleci.com/gh/reindeer-project/reindeer-crowdfunding)
 
-reindeer token and crowdfunding contracts
+reindeer crowdfunding contracts
 
 # Requirements
 
