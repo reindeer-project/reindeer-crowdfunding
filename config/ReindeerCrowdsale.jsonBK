@@ -1,0 +1,14 @@
+{
+  "openingTime": 1535439600  ,
+  "salesPeriod": [1535440200,1535440300,1535440400,1535440500],
+  "closingTime": 1535440600,
+  "rates": [5000,2300,2000,1900,1800],
+  "cap": 100000,
+  "goal": 3000,
+  "initialFundBalance" : 500000000,
+  "maxTokenSupply" : 1000000000,
+  "preTokenSupply" : 995500000,
+  "minUserCap": [0.1,300],
+  "maxUserCap": [40,1000],
+  "tokenAddress": "0x59bebcaa87c818581ffaad64abbb71a03fd18832"
+}
