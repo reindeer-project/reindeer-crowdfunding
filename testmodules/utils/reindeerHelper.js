@@ -37,7 +37,7 @@ const timeLeap = async thresholdsec => {
 }
 
 const convert = (n, conversion) => new web3.BigNumber(conversion(n, 'ether'))
-const toWei = n => convert(n, web3.toWei)/100  //Convert to 1/100 for enable limited testenv.
+const toWei = n => convert(n, web3.toWei)/1000  //Convert to 1/1000 for enable limited testenv.
 const fromWei = n => convert(n, web3.fromWei)
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');

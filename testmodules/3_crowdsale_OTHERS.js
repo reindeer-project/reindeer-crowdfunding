@@ -100,12 +100,12 @@ contract('ReindeerCrowdsale', (accounts) => {
           this.prewhitelisted.push(accounts[id])
         }
         await obj["crowdsale"].addManyToWhitelist(this.prewhitelisted);
-        await obj["crowdsale"].setGroupCap(this.prewhitelisted, toWei(1000));
+        await obj["crowdsale"].setGroupCap(this.prewhitelisted, toWei(40000));
         for (id = 6; id <8; id++){
           this.whitelisted.push(accounts[id])
         }
         await obj["crowdsale"].addManyToWhitelist(this.whitelisted);
-        await obj["crowdsale"].setGroupCap(this.whitelisted, toWei(40));
+        await obj["crowdsale"].setGroupCap(this.whitelisted, toWei(80));
         for (id = 8; id <10; id++){
           this.anonymous.push(accounts[id])
         }
@@ -126,23 +126,23 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
 
-      it('BeforeOpen: Default exchange rate is 5,000/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 2000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 5000);
+        await assert.equal(actual, 2000);
       });
-      it('BeforeOpen: Initially, reindeer fund has 500,000,000 tokens.', async function () {
+      it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
-        await assert.equal(actual, toWei(500000000));
+        await assert.equal(actual, toWei(400000000));
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { from: this.anonymous[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
-      it('BeforeOpen: Whitelisted member allowed under 10000 can not buy the token.', async function () {
+      it('BeforeOpen: Whitelisted member allowed under 40000 can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
-      it('BeforeOpen: Whitelisted member allowed over 10000 can not buy the token.', async function () {
+      it('BeforeOpen: Whitelisted member allowed over 40000 can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.prewhitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[0], { from: this.prewhitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
@@ -156,14 +156,16 @@ contract('ReindeerCrowdsale', (accounts) => {
         let isAuthorized = await this.crowdsale.whitelist(this.anonymous[1]);
         isAuthorized.should.equal(true);
       });
+
+
       it('PreSale: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
         const diff = this.presaledAt - now;
         await timeLeap(diff);     
       });
-      it('PreSale: Default exchange rate is 5,000/eth', async function () {
+      it('PreSale: Default exchange rate is 2,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 5000);
+        await assert.equal(actual, 2000);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -172,7 +174,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       it('PreSale: Emergency stop!', async function () {
         await this.crowdsale.pause();
       });
-      it('PreSale: During paused state, whitelisted member allowed over 10000 can buy the token.', async function () {
+      it('PreSale: During paused state, whitelisted member allowed over 40000 can buy the token.', async function () {
         for (i = 0; i <2; i++){
           someEther = toWei(0.01);  //under the minUserCap of whitelisted.     
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
@@ -180,18 +182,16 @@ contract('ReindeerCrowdsale', (accounts) => {
           someEther = toWei(0.1);  //minUserCap of whitelisted.  
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
-          someEther = toWei(40);   //maxUserCap of whitelisted.    
+          someEther = toWei(80);   //maxUserCap of whitelisted.    
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
-          someEther = toWei(300);  //minUserCap of prewhitelisted.       
+          someEther = toWei(2.0);  //minUserCap of prewhitelisted.       
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);          
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
-          someEther = toWei(700);  //The summary of bought volume is under the maxUserCap of prewhitelisted. 
+          someEther = toWei(40000);  //maxUserCap of prewhitelisted. 
           await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
           await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
-          someEther = toWei(300);  //The summary of bought volume is over the maxUserCap of prewhitelisted. 
-          await this.crowdsale.send(someEther,{from: this.prewhitelisted[i]}).should.be.rejectedWith(assertThrows);
-          await this.crowdsale.buyTokens(this.prewhitelisted[i], { from: this.prewhitelisted[i], value: someEther }).should.be.rejectedWith(assertThrows);
+          
           const x = await this.crowdsale.getUserContribution(this.prewhitelisted[i]);
           await assert.equal(x, toWei(0)); //Total bought volume is the same as maxUserCap.
           //Not allowed finalize
@@ -205,7 +205,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('1stTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2300);
+        await assert.equal(actual, 1500);
         //const testtime = web3.eth.getBlock('latest').timestamp;
 	      //console.log("          at: " + timeConverter(testtime));
       });
@@ -215,19 +215,19 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(0.1);
+        someEther=toWei(0.4);
         //const gas1 = await this.crowdsale.buyTokens.estimateGas(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]});
         //console.log(gas1+"unit, " + gas1*0.0000005*80000+"JPY");
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(500);
+        someEther=toWei(80);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(1001);
+        someEther=toWei(40000);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
@@ -240,7 +240,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('2ndTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1250);
       });
       it('2ndTerm: Restart!', async function () {
         await this.crowdsale.unpause();
@@ -251,17 +251,17 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(0.1);
+        someEther=toWei(0.4);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.fulfilled;
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
-        someEther=toWei(50);
+        someEther=toWei(80);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
-        someEther=toWei(1001);
+        someEther=toWei(40000);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
@@ -274,7 +274,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('3rdTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1900);
+        await assert.equal(actual, 1100);
 
       });
       it('3rdTerm: Only the whitelisted member can buy the token.', async function () {
@@ -283,17 +283,17 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(0.1);
+        someEther=toWei(0.4);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.fulfilled;
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
-        someEther=toWei(50);
+        someEther=toWei(80);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.fulfilled;
-        someEther=toWei(1001);
+        someEther=toWei(40000);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
@@ -307,7 +307,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('4thTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1000);
 
       });
       it('PreSale: Emergency stop!', async function () {
@@ -319,23 +319,24 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(0.1);
+        someEther=toWei(0.4);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(50);
+        someEther=toWei(80);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(1001);
+        someEther=toWei(40000);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
       });
- 
+
+
       it('Closed: Prepared', async function () {
         const now = web3.eth.getBlock('latest').timestamp;
         const diff = this.closingtime - now + 1;
@@ -343,7 +344,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('Closed: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1000);
       });
       it('Out of Date: Nobody can buy the token.', async function () {
         someEther=toWei(0.09); 
@@ -351,17 +352,17 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(0.1);
+        someEther=toWei(0.4);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(50);
+        someEther=toWei(80);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[2], { value: someEther, from: this.prewhitelisted[2]}).should.be.rejectedWith(assertThrows);
-        someEther=toWei(1001);
+        someEther=toWei(40000);
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { value: someEther, from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { value: someEther, from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
@@ -383,7 +384,13 @@ contract('ReindeerCrowdsale', (accounts) => {
         const actual2 = web3.fromWei(await web3.eth.getBalance(this.fund.address).toNumber(),"ether");
         await assert.equal(actual2, 0);
         //Finalize
+	//console.log(web3.fromWei(await this.token.totalSupply(),"ether"));
+	//console.log(web3.fromWei(await this.token.balanceOf(this.fund.address),"ether"));
         await this.crowdsale.finalize({gas:500000}).should.be.fulfilled;
+	//Automatically mint upto max token supply. Minted token is sent to fund address.
+	//console.log(web3.fromWei(await this.token.totalSupply(),"ether"));
+	//console.log(web3.fromWei(await this.token.balanceOf(this.fund.address),"ether"));
+
         const actual3 = web3.fromWei(await web3.eth.getBalance(await this.crowdsale.vault()).toNumber(),"ether");
         await assert.equal(actual3, 0);
         const actual4 = web3.fromWei(await web3.eth.getBalance(this.fund.address).toNumber(),"ether");
@@ -391,6 +398,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         //Finalize need to be work at once.
         await assert.equal(actual1, actual4); //same eth sent to the wallet.
         //Unrefundable before finalize
+
         await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
       it('Can not buy after finalinzation', async function () {
@@ -422,7 +430,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const fundTkn = await this.token.balanceOf(this.fund.address);
         const percentage1 = fundTkn / totalTkn;
         const percentage2 = Math.floor(percentage1*100);
-        await assert.equal(percentage2, 50); //Fund own 50% of total supply.  
+
+        await assert.isAbove(percentage2, 49); //Fund own nearly 50% of total supply.  
+
       });
       it('Sned token', async function () {        
         //sendToken

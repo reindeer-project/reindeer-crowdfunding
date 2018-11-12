@@ -1,14 +1,14 @@
 {
-  "openingTime": 1590820289  ,
-  "salesPeriod": [1590820389,1590820489,1590820589,1590820689],
-  "closingTime": 1590820789,
-  "rates": [5000,2300,2000,1900,1800],
-  "cap": 100000,
-  "goal": 3000,
-  "initialFundBalance" : 500000000,
-  "maxTokenSupply" : 1000000000,
-  "preTokenSupply" : 995500000,
-  "minUserCap": [0.1,300],
-  "maxUserCap": [40,1000],
-  "tokenAddress": "0x49d053e809bd55d1364f4c40741a5a8e1e7ab58f"
+  "openingTime": 1545278400  ,
+  "salesPeriod": [1546833600,1547438400,1548043200,1548648000],
+  "closingTime": 1549252800,
+  "rates": [2000,1500,1250,1100,1000],
+  "cap": 200000,
+  "goal": 4000,
+  "initialFundBalance" : 400000000,
+  "maxTokenSupply" : 800000000,
+  "preTokenSupply" : 760000000,
+  "minUserCap": [0.4,2],
+  "maxUserCap": [80,40000],
+  "tokenAddress": "0x8E49085343bF64522Be60ff83FD5E99939fC1aC4"
 }

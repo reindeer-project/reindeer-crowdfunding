@@ -100,12 +100,12 @@ contract('ReindeerCrowdsale', (accounts) => {
           this.prewhitelisted.push(accounts[id])
         }
         await obj["crowdsale"].addManyToWhitelist(this.prewhitelisted);
-        await obj["crowdsale"].setGroupCap(this.prewhitelisted, toWei(1000));
+        await obj["crowdsale"].setGroupCap(this.prewhitelisted, toWei(40000));
         for (id = 6; id <8; id++){
           this.whitelisted.push(accounts[id])
         }
         await obj["crowdsale"].addManyToWhitelist(this.whitelisted);
-        await obj["crowdsale"].setGroupCap(this.whitelisted, toWei(40));
+        await obj["crowdsale"].setGroupCap(this.whitelisted, toWei(80));
         for (id = 8; id <10; id++){
           this.anonymous.push(accounts[id])
         }
@@ -121,19 +121,19 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(ownership, accounts[0]);
         await obj["token"].transferOwnership(obj["crowdsale"].address).should.be.fulfilled; //change ownership to CloudSale contract
       });
-      it('BeforeOpen: Default exchange rate is 5,000/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 2,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 5000);
+        await assert.equal(actual, 2000);
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.anonymous[0], { from: this.anonymous[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
-      it('BeforeOpen: Whitelisted member allowed under 10000 can not buy the token.', async function () {
+      it('BeforeOpen: Whitelisted member allowed under 40000 can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.whitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.whitelisted[0], { from: this.whitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
-      it('BeforeOpen: Whitelisted member allowed over 10000 can not buy the token.', async function () {
+      it('BeforeOpen: Whitelisted member allowed over 80 can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.prewhitelisted[0]}).should.be.rejectedWith(assertThrows);
         await this.crowdsale.buyTokens(this.prewhitelisted[0], { from: this.prewhitelisted[0], value: someEther }).should.be.rejectedWith(assertThrows);
       });
