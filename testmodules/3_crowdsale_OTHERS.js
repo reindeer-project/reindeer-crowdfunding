@@ -426,7 +426,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         const pm = log[0].args["transactionId"];
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmA = await this.fund.confirmTransaction(pm,{from: this.fundOwners[1]}).should.be.fulfilled;
-        const totalTkn = await this.token.totalSupply();
+        const totalTkn = await this.token.totalSupply.call();
         const fundTkn = await this.token.balanceOf.call(this.fund.address);
         const percentage1 = fundTkn / totalTkn;
         const percentage2 = Math.floor(percentage1*100);
@@ -459,7 +459,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmC = await this.fund.confirmTransaction(pm2,{from: this.fundOwners[1]}).should.be.fulfilled;
         const fundB = await this.token.balanceOf.call(this.fund.address);
-        const total4 = await this.token.totalSupply();
+        const total4 = await this.token.totalSupply.call();
         await assert.isAbove(total4.toNumber(),total3.toNumber());
         await assert.isAbove(fundB.toNumber(),fundA.toNumber());
         //console.log(total3+" << "+total4);
