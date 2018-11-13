@@ -122,7 +122,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(ownership, accounts[0]);
       });
 
-      it('BeforeOpen: Default exchange rate is 2,000/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 1800/eth', async function () {
         const actual = await this.crowdsale.getRate();
         await assert.equal(actual, 1800);
       });
