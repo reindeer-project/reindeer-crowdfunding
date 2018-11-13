@@ -127,7 +127,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
-        const actual = await this.token.balanceOf(this.fund.address);
+        const actual = await this.token.balanceOf.call(this.fund.address);
         await assert.equal(actual, toWei(400000000));
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
@@ -410,12 +410,12 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('Mint after finalized', async function () {
         await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled;
-        const fundA = await this.token.balanceOf(this.fund.address);
-        const total3 = await this.token.totalSupply();
+        const fundA = await this.token.balanceOf.call(this.fund.address);
+        const total3 = await this.token.totalSupply.call();
         const mintbalance = total3*0.1/12;
         await obj["token"].mint(obj["fund"].address,toWei(1000000));
-        const fundB = await this.token.balanceOf(this.fund.address);
-        const total4 = await this.token.totalSupply();
+        const fundB = await this.token.balanceOf.call(this.fund.address);
+        const total4 = await this.token.totalSupply.call();
         await assert.isAbove(total4.toNumber(),total3.toNumber());
         await assert.isAbove(fundB.toNumber(),fundA.toNumber());
         //console.log(total3+" << "+total4);

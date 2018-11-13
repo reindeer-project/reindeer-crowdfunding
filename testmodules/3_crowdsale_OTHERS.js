@@ -119,7 +119,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled; //change ownership to CloudSale contract's owner
         var ownership = await obj["token"].owner();
         await obj["token"].mint(this.anonymous[1],toWei(1000000));
-        await assert.equal(await this.token.balanceOf(this.anonymous[1]), toWei(1000000));        
+        await assert.equal(await this.token.balanceOf.call(this.anonymous[1]), toWei(1000000));        
         await obj["token"].transferOwnership(obj["crowdsale"].address); //change ownership to CloudSale contract
         await assert.equal(ownership, accounts[0]);
         //Not allowed finalize
@@ -131,7 +131,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
-        const actual = await this.token.balanceOf(this.fund.address);
+        const actual = await this.token.balanceOf.call(this.fund.address);
         await assert.equal(actual, toWei(400000000));
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
@@ -385,11 +385,11 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(actual2, 0);
         //Finalize
 	//console.log(web3.fromWei(await this.token.totalSupply(),"ether"));
-	//console.log(web3.fromWei(await this.token.balanceOf(this.fund.address),"ether"));
+	//console.log(web3.fromWei(await this.token.balanceOf.call(this.fund.address),"ether"));
         await this.crowdsale.finalize({gas:500000}).should.be.fulfilled;
 	//Automatically mint upto max token supply. Minted token is sent to fund address.
 	//console.log(web3.fromWei(await this.token.totalSupply(),"ether"));
-	//console.log(web3.fromWei(await this.token.balanceOf(this.fund.address),"ether"));
+	//console.log(web3.fromWei(await this.token.balanceOf.call(this.fund.address),"ether"));
 
         const actual3 = web3.fromWei(await web3.eth.getBalance(await this.crowdsale.vault()).toNumber(),"ether");
         await assert.equal(actual3, 0);
@@ -411,7 +411,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       it('Burn after finalized', async function () {
         //Move burnable amount of token to owner account.
         const total1 = await this.token.totalSupply();
-        const fund1 = await this.token.balanceOf(this.fund.address);
+        const fund1 = await this.token.balanceOf.call(this.fund.address);
         const sold1  = total1 - fund1;
         const burnable = fund1 - sold1;
         //Reset ownership
@@ -427,7 +427,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmA = await this.fund.confirmTransaction(pm,{from: this.fundOwners[1]}).should.be.fulfilled;
         const totalTkn = await this.token.totalSupply();
-        const fundTkn = await this.token.balanceOf(this.fund.address);
+        const fundTkn = await this.token.balanceOf.call(this.fund.address);
         const percentage1 = fundTkn / totalTkn;
         const percentage2 = Math.floor(percentage1*100);
 
@@ -437,19 +437,19 @@ contract('ReindeerCrowdsale', (accounts) => {
       it('Sned token', async function () {        
         //sendToken
         const sometoken = toWei(10);
-        const ownertoken2 = await this.token.balanceOf(this.fundOwners[1]);
+        const ownertoken2 = await this.token.balanceOf.call(this.fundOwners[1]);
         const transferEncoded1 = await this.token.contract.transfer.getData(this.fundOwners[1],sometoken);
         const transaction1 = await this.fund.submitTransaction(this.token.address, 0, transferEncoded1, {from: this.fundOwners[0]});
         const log1 = transaction1.logs.filter((l) => l.event === "Submission");
         const pm1 = log1[0].args["transactionId"];
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmB = await this.fund.confirmTransaction(pm1,{from: this.fundOwners[1]}).should.be.fulfilled;
-        const ownertoken3 = await this.token.balanceOf(this.fundOwners[1]);
+        const ownertoken3 = await this.token.balanceOf.call(this.fundOwners[1]);
         const ownertoken4 = ownertoken2 + sometoken;
         await assert.equal(ownertoken3.toNumber(), ownertoken4);
       });
       it('Mint after finalized', async function () {
-        const fundA = await this.token.balanceOf(this.fund.address);
+        const fundA = await this.token.balanceOf.call(this.fund.address);
         const total3 = await this.token.totalSupply();
         const mintbalance = total3*0.1/12;
         const transferEncoded2 = await this.token.contract.mint.getData(obj["fund"].address,mintbalance);
@@ -458,7 +458,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         const pm2 = log2[0].args["transactionId"];
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmC = await this.fund.confirmTransaction(pm2,{from: this.fundOwners[1]}).should.be.fulfilled;
-        const fundB = await this.token.balanceOf(this.fund.address);
+        const fundB = await this.token.balanceOf.call(this.fund.address);
         const total4 = await this.token.totalSupply();
         await assert.isAbove(total4.toNumber(),total3.toNumber());
         await assert.isAbove(fundB.toNumber(),fundA.toNumber());
