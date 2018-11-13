@@ -125,7 +125,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
-        const actual = await this.token.balanceOf(this.fund);
+        const actual = await this.token.balanceOf.call(this.fund.address);
 
         await assert.equal(actual, toWei(400000000));
       });
