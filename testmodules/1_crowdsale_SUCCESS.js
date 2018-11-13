@@ -127,7 +127,8 @@ contract('ReindeerCrowdsale', (accounts) => {
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
 
-console.log(actual);
+console.log(this.fund.address);
+console.log(this.token);
 console.log(toWei(400000000));
 
 
