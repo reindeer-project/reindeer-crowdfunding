@@ -122,7 +122,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('BeforeOpen: Default exchange rate is 2,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
@@ -157,9 +157,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const diff = this.presaledAt - now;
         await timeLeap(diff);     
       });
-      it('PreSale: Default exchange rate is 2,000/eth', async function () {
+      it('PreSale: Default exchange rate is 1800/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -209,7 +209,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         };
         //Emurate reaching maxTokenSupply within preSale.
         //preTokenSupply-sold-minUnit-fundBalance
-        var emurateval= 760000000-(40000*2000*2)-(5000*2000)-400000000;
+        var emurateval= 760000000-(40000*1800*2)-(5000*1800)-400000000;
 
         await obj["crowdsale"].resetTokenOwnership().should.be.fulfilled; //change ownership to CloudSale contract's owner
         await obj["token"].mint(obj["fund"].address,toWei(emurateval));

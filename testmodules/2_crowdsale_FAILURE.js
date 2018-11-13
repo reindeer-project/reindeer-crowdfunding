@@ -124,7 +124,7 @@ contract('ReindeerCrowdsale', (accounts) => {
 
       it('BeforeOpen: Default exchange rate is 2,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
@@ -159,7 +159,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('PreSale: Default exchange rate is 2,000/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);

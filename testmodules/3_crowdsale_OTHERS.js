@@ -126,9 +126,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
 
-      it('BeforeOpen: Default exchange rate is 2000/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 1800/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
@@ -163,9 +163,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const diff = this.presaledAt - now;
         await timeLeap(diff);     
       });
-      it('PreSale: Default exchange rate is 2,000/eth', async function () {
+      it('PreSale: Default exchange rate is 1800/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 2000);
+        await assert.equal(actual, 1800);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -431,7 +431,7 @@ contract('ReindeerCrowdsale', (accounts) => {
         const percentage1 = fundTkn / totalTkn;
         const percentage2 = Math.floor(percentage1*100);
 
-        await assert.isAbove(percentage2, 49); //Fund own nearly 50% of total supply.  
+        await assert.isAtLeast(percentage2, 49); //Fund own nearly 50% of total supply.  
 
       });
       it('Sned token', async function () {        
@@ -467,12 +467,16 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('Withdraw ether from the fund', async function () {
         const actual3 = web3.fromWei(await web3.eth.getBalance(this.fundOwners[2]).toNumber(),"ether");
+
         const transaction3 = await this.fund.submitTransaction(this.fundOwners[2], web3.toWei(1), "", {from: this.fundOwners[0]});
         const log3 = transaction3.logs.filter((l) => l.event === "Submission");
         const pm3 = log3[0].args["transactionId"];
         //Need just one more owner's confirmation. (sender and additional one person can execute the transaction)
         const confirmD = await this.fund.confirmTransaction(pm3,{from: this.fundOwners[1]}).should.be.fulfilled;
+        const confirmE = await this.fund.confirmTransaction(pm3,{from: this.fundOwners[2]}).should.be.fulfilled;
+
         const actual4 = web3.fromWei(await web3.eth.getBalance(this.fundOwners[2]).toNumber(),"ether");
+        //console.log(actual3+" << "+actual4);
         await assert.isAbove(actual4,actual3);
       });
       it('Transfer token ownership for other contracts.', async function () {
