@@ -450,7 +450,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('Mint after finalized', async function () {
         const fundA = await this.token.balanceOf.call(this.fund.address);
-        const total3 = await this.token.totalSupply();
+        const total3 = await this.token.totalSupply.call();
         const mintbalance = total3*0.1/12;
         const transferEncoded2 = await this.token.contract.mint.getData(obj["fund"].address,mintbalance);
         const transaction2 = await this.fund.submitTransaction(this.token.address, 0, transferEncoded2, {from: this.fundOwners[0]});
