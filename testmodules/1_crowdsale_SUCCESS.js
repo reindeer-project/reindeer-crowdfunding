@@ -32,6 +32,7 @@ async function deployContract(openingtime,closingtime,salesPeriod,goal, someEthe
 
     const obj = [];
     obj["token"] = await ReindeerToken.new();
+console.log(obj["token"]);
     obj["fund"] = await ReindeerFund.new(fundOwners,fundParams.required);
     obj["crowdsale"] = await ReindeerCrowdsale.new(
       openingtime, 
