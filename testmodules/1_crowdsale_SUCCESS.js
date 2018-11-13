@@ -32,7 +32,6 @@ async function deployContract(openingtime,closingtime,salesPeriod,goal, someEthe
 
     const obj = [];
     obj["token"] = await ReindeerToken.new();
-console.log(obj["token"]);
     obj["fund"] = await ReindeerFund.new(fundOwners,fundParams.required);
     obj["crowdsale"] = await ReindeerCrowdsale.new(
       openingtime, 
@@ -127,6 +126,11 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf(this.fund.address);
+
+console.log(actual);
+console.log(toWei(400000000));
+
+
         await assert.equal(actual, toWei(400000000));
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
