@@ -130,9 +130,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const actual = await this.crowdsale.getRate();
         await assert.equal(actual, 1800);
       });
-      it('BeforeOpen: Initially, reindeer fund has 400,000,000 tokens.', async function () {
+      it('BeforeOpen: Initially, reindeer fund has 1,250,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf.call(this.fund.address);
-        await assert.equal(actual, toWei(400000000));
+        await assert.equal(actual, toWei(1250000000));
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
