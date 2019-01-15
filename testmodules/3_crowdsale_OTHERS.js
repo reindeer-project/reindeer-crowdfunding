@@ -126,9 +126,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         await this.crowdsale.finalize({gas:500000}).should.be.rejectedWith(assertThrows);
       });
 
-      it('BeforeOpen: Default exchange rate is 1800/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 1400/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1400);
       });
       it('BeforeOpen: Initially, reindeer fund has 1,250,000,000 tokens.', async function () {
         const actual = await this.token.balanceOf.call(this.fund.address);
@@ -163,9 +163,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const diff = this.presaledAt - now;
         await timeLeap(diff);     
       });
-      it('PreSale: Default exchange rate is 1800/eth', async function () {
+      it('PreSale: Default exchange rate is 1400/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1400);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -205,7 +205,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('1stTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1500);
+        await assert.equal(actual, 1250);
         //const testtime = web3.eth.getBlock('latest').timestamp;
 	      //console.log("          at: " + timeConverter(testtime));
       });
@@ -240,7 +240,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('2ndTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1250);
+        await assert.equal(actual, 1200);
       });
       it('2ndTerm: Restart!', async function () {
         await this.crowdsale.unpause();
@@ -274,7 +274,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('3rdTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1100);
+        await assert.equal(actual, 1150);
 
       });
       it('3rdTerm: Only the whitelisted member can buy the token.', async function () {
@@ -307,7 +307,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('4thTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1000);
+        await assert.equal(actual, 1100);
 
       });
       it('PreSale: Emergency stop!', async function () {
@@ -344,7 +344,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('Closed: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1000);
+        await assert.equal(actual, 1100);
       });
       it('Out of Date: Nobody can buy the token.', async function () {
         someEther=toWei(0.09); 

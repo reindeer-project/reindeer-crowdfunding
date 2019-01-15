@@ -22,8 +22,8 @@ function timeConverter(UNIX_timestamp){
 }
 
 async function deployContract(openingtime,closingtime,salesPeriod,goal, someEther, fundOwners) {
-    const precap=300*1800+100;
-    const maxcap=precap+(0.4*1500)+(0.4*1500)+(0.8*1500);
+    const precap=300*1400+100;
+    const maxcap=precap+(0.4*1250)+(0.4*1250)+(0.8*1250);
     const actualCap = toWei(331); // Complete as the token-cap has been reached, not the contribution volume.
     const actualGoal = toWei(goal);
     const actualMinUserCap = [toWei(crowdsaleParams.minUserCap[0]),toWei(crowdsaleParams.minUserCap[1])];
@@ -121,9 +121,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         await assert.equal(ownership, accounts[0]);
         await obj["token"].transferOwnership(obj["crowdsale"].address).should.be.fulfilled; //change ownership to CloudSale contract
       });
-      it('BeforeOpen: Default exchange rate is 1800/eth', async function () {
+      it('BeforeOpen: Default exchange rate is 1400/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1400);
       });
       it('BeforeOpen: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -154,9 +154,9 @@ contract('ReindeerCrowdsale', (accounts) => {
         const diff = this.presaledAt - now;
         await timeLeap(diff);     
       });
-      it('PreSale: Default exchange rate is 1800/eth', async function () {
+      it('PreSale: Default exchange rate is 1400/eth', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1800);
+        await assert.equal(actual, 1400);
       });
       it('PreSale: Unwhitelisted member can not buy the token.', async function () {
         await this.crowdsale.send(someEther,{from: this.anonymous[0]}).should.be.rejectedWith(assertThrows);
@@ -207,7 +207,7 @@ contract('ReindeerCrowdsale', (accounts) => {
       });
       it('1stTerm: Exchange rate is correct', async function () {
         const actual = await this.crowdsale.getRate();
-        await assert.equal(actual, 1500);
+        await assert.equal(actual, 1250);
         //const testtime = web3.eth.getBlock('latest').timestamp;
 	      //console.log("          at: " + timeConverter(testtime));
       });
